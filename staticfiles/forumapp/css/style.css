@@ -1,0 +1,25 @@
+.forum-table {
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: 1px solid #e9ecef;
+}
+
+nav {
+    margin-bottom: 1rem;
+}
+
+.clickable-row:hover {
+    background-color: #eee;
+}
+
+body {
+    padding-bottom: 2rem;
+}
+
+.pinned {
+    background: #EBFFEF;
+}
+
+a.gray-anchor:link {
+    color: #ccc;
+}
