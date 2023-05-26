@@ -120,7 +120,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'forumapp', 'static'),
+    os.path.join(BASE_DIR, 'forumapp', 'static', 'forumapp'),
 ]
 LOGIN_REDIRECT_URL = '/forumapp'
 LOGOUT_REDIRECT_URL = '/forumapp'
