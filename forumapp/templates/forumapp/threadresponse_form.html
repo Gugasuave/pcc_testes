@@ -1,0 +1,25 @@
+{% extends "forumapp/base.html" %}
+
+{% load static %}
+
+{% block title %}
+Form de resposta
+{% endblock %}
+
+{% block content %}
+{% if form.message.value %}
+<div>Editando seu post: <a href="{% url 'thread-view' forum.id thread.id %}">{{ thread }}</a></div>
+{% else %}
+<div>Respondendo á: <a href="{% url 'thread-view' forum.id thread.id %}">{{ thread }}</a></div>
+{% endif %}
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div id="chars_left"></div>
+    <input class="btn btn-success" type="submit" value="Submit"/>
+</form>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'forumapp/js/chars_left_message.js' %}"></script>
+{% endblock %}

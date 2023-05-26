@@ -1,0 +1,15 @@
+{% extends 'forumapp/base.html' %}
+
+{% block title %}
+Deletando post
+{% endblock %}
+
+{% block content %}
+<div>Tem cereteza que sejeda deletar seu post?</div>
+<form method="post">
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Submit"/>
+    </form>
+</form>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'forumapp/base.html' %}
+
+{% block title %}
+Forum
+{% endblock %}
+
+{% load forumapp_extras %}
+
+{% block content %}
+
+{% for section in sections %}
+<div class="col-lg-12">
+    <table class="table forum-table">
+        <thead>
+        <tr>
+            <th>{{ section.name|capitalize }}</th>
+            <th>Posts recentes</th>
+            <th>Discussões</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for forum in section.forum_set.all %}
+        <tr class="clickable-row">
+            <td>
+                <div>
+                    <a href="{% url 'forum' forum.id %}">{{ forum.name }}</a>
+                </div>
+                    {{ forum.description }}
+            </td>
+            {% if forum.thread_set.all|length > 0 %}
+            <td>
+                <a href="{% url 'thread-view' forum.id forum.thread_set.last.id %}">
+                    {{ forum.thread_set.last }}
+                </a>
+            </td>
+            {% else %}
+            <td>No recent posts.</td>
+            {% endif %}
+            <td>{{ forum.thread_set.all|length }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+{% endblock %}

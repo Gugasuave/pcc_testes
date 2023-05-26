@@ -1,0 +1,25 @@
+{% extends "forumapp/base.html" %}
+
+{% load static %}
+
+{% block title %}
+Form de post
+{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+        {{ form_thread.as_p }}
+        {{ form_response.as_p }}
+    <input
+        type="submit"
+        value="Submit"
+        class="btn btn-success"
+    />
+</form>
+<div id="chars_left"></div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'forumapp/js/chars_left_message.js' %}"></script>
+{% endblock %}

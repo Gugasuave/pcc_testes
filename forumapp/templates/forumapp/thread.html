@@ -1,0 +1,239 @@
+{% extends "forumapp/base.html" %}
+
+{% block title %}
+{{ forum.name }} | {{ thread.name }}
+{% endblock %}
+
+{% load forumapp_extras %}
+{% load static %}
+
+{% block content %}
+<div>Topico atual: <a href="{% url 'forum' forum.id %}">{{ forum.name }}</a></div>
+{% if response_list %}
+<table class="table forum-table">
+    <thead>
+    <tr>
+        <th>{{ thread }}</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for response in response_list %}
+    <tr>
+        <td>
+            <div>
+                <span>{{ response.created_datetime }}</span>
+                <a
+                    id="{{ response.order_in_thread }}"
+                    href="#{{ response.order_in_thread }}"
+                    style="float: right"
+                >#{{ response.order_in_thread }}
+                </a>
+            </div>
+            <div>
+                <span>{{ response }}</span>
+            </div>
+
+            {% if response.edited %}
+            <div>
+                <small>Este post foi editado.</small>
+            </div>
+            {% endif %}
+
+            <hr style="background: #000"/>
+            por <a
+                href="{% url 'user-view' response.responder.id %}"
+            >{{ response.responder }}
+            </a>
+            {% if response.responder == request.user %}
+            <a
+                style="float: right"
+                href="{% url 'edit-post' response.thread.forum.id response.thread.id response.id %}"
+                class="btn btn-info"
+                role="button"
+            >
+                <span class="fa fa-pencil"></span>
+                Editar
+            </a>
+            {% endif %}
+            {% if response|can_remove_response:request.user and forloop.counter > 1 %}
+            <a
+                style="float: right"
+                href="{% url 'delete-post' response.thread.forum.id response.thread.id response.id %}"
+                class="btn btn-danger"
+                role="button"
+            >
+                <span class="fa fa-times"></span>
+                Delete
+            </a>
+            {% endif %}
+
+            <div>
+                {% if request.user.is_authenticated %}
+                {% with liked=response.likedislike_set.all|voted_by_user:request.user %}
+                <a
+                    href="javascript:vote('{% url 'like-dislike-post' response.thread.forum.id response.thread.id response.id 1 %}')"
+                    class="fa fa-arrow-up {% if liked == 0 or liked == -1 %}gray-anchor{% endif %}"
+                    id="up_{{ response.id }}"
+                >
+                </a>
+                <a
+                    href="javascript:vote('{% url 'like-dislike-post' response.thread.forum.id response.thread.id response.id 0 %}')"
+                    class="fa fa-arrow-down {% if liked == 0 or liked == 1 %}gray-anchor{% endif %}"
+                    id="down_{{ response.id }}"
+                >
+                </a>
+                {% endwith %}
+                {% endif %}
+            </div>
+            <div id="likes_{{ response.id }}">
+                {{ response.likedislike_set.all|summarize_likes }}
+            </div>
+
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<div>O tópico solicitado não existe neste fórum.</div>
+{% endif %}
+<nav aria-label="...">
+    <ul class="pagination justify-content-center">
+        {% if response_list.has_previous %}
+        <li class="page-item">
+            <a
+                class="page-link"
+                href="?page={{ response_list.previous_page_number }}"
+            >Anterior</a>
+        </li>
+        {% endif %}
+
+        {% for i in response_list.paginator.num_pages|times %}
+        {% if response_list.number|stringformat:"i" == i %}
+        <li class="page-item active">
+            <span class="page-link">{{ i }}</span>
+        </li>
+        {% else %}
+        <li class="page-item">
+            <a
+                class="page-link"
+                href="?page={{ i }}"
+            >{{ i }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% if response_list.has_next %}
+        <li class="page-item">
+            <a
+                class="page-link"
+                href="?page={{ response_list.next_page_number }}"
+            >Proximo</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<a
+    href="{% url 'respond-thread' thread.forum.id thread.id %}"
+    class="btn btn-success"
+    role="button"
+>
+    <span class="fa fa-comment"></span>
+    Responder
+</a>
+{% if can_delete_thread %}
+    <a href="{% url 'thread-delete' thread.forum.id thread.id %}"
+       class="btn btn-danger" role="button"
+    >
+        <span class="fa fa-times"></span>
+        Deletar post</a>
+{% endif %}
+
+{% if perms.forumapp.can_pin_threads %}
+<a
+    href="{% url 'pin-thread' thread.forum.pk thread.pk %}"
+    class="btn btn-primary"
+><span class="fa fa-thumb-tack"></span>
+    Fixar
+</a>
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'forumapp/js/csrf_functions.js' %}"></script>
+<script>
+
+    var csrftoken = getCookie("csrftoken");
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    function vote(url) {
+        $.post({
+            url: url,
+            data: {
+                "request": "{{ request }}"
+            },
+            dataType: "json",
+            statusCode: {
+
+                "202": function(data) {
+
+                    $("#up_" + data.pk).addClass("gray-anchor");
+                    $("#down_" + data.pk).addClass("gray-anchor");
+                    current_val = parseInt($("#likes_" + data.pk).text());
+
+                    if (data.upvote) {
+                        current_val -= 1;
+                    } else {
+                        current_val += 1;
+                    }
+
+                    $("#likes_" + data.pk).text(current_val);
+
+                },
+
+                "200": function(data) {
+
+                    current_val = parseInt($("#likes_" + data.pk).text());
+                    if (data.to == 1) {
+                        $("#down_" + data.pk).addClass("gray-anchor");
+                        $("#up_" + data.pk).removeClass("gray-anchor");
+                        current_val += 2;
+                    } else {
+                        $("#up_" + data.pk).addClass("gray-anchor");
+                        $("#down_" + data.pk).removeClass("gray-anchor");
+                        current_val -= 2;
+                    }
+
+                    $("#likes_" + data.pk).text(current_val);
+
+                },
+
+                "201": function(data) {
+
+                    current_val = parseInt($("#likes_" + data.pk).text());
+
+                    if (data.like == 1) {
+                        $("#up_" + data.pk).removeClass("gray-anchor");
+                        current_val += 1;
+                    } else {
+                        $("#down_" + data.pk).removeClass("gray-anchor");
+                        current_val -= 1;
+                    }
+
+                    $("#likes_" + data.pk).text(current_val);
+
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

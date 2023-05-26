@@ -1,0 +1,45 @@
+{% extends 'forumapp/base.html' %}
+
+{% block title %}
+Usuario | {{ viewed_user }}
+{% endblock %}
+
+{% block content %}
+<h1>Usuario: {{ viewed_user }}</h1>
+<hr />
+
+{% if banned_until %}
+<div>Ban: {{ banned_until }}</div>
+{% endif %}
+
+<h2>Respostas</h2>
+
+{% for response in user_responses %}
+<div>
+    {% if response.order_in_thread > 10 %}
+
+<a href='{% url "thread-view" response.thread.forum.id response.thread.id %}?page={% widthratio response.order_in_thread 10 1|add:"1" %}#{{ response.order_in_thread }}'>{{ response }}</a>
+
+    {% else %}
+
+<a href="{% url 'thread-view' response.thread.forum.id response.thread.id %}#{{ response.order_in_thread }}">{{ response }}</a>
+
+    {% endif %}
+</div>
+
+{% empty %}
+<div>Sem respostas.</div>
+{% endfor %}
+{% if can_ban %}
+    <div>
+        <a
+            role="button"
+            href="{% url 'ban-user' viewed_user.pk %}"
+            class="btn btn-warning"
+        >
+            <span class="fa fa-ban"></span>
+            Ver bans
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

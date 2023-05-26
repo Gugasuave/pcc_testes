@@ -1,0 +1,13 @@
+{% extends 'forumapp/base.html' %}
+
+{% block title %}
+Banir usuario
+{% endblock %}
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-warning" value="Mudar data de ban"/>
+</form>
+<small>Se a data do banimento for anterior a agora, isso significa que o usuário não foi banido.</small>
+{% endblock %}
