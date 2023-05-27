@@ -118,7 +118,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = 'forumapp/static'
+STATIC_ROOT = 'pcc_testes/forumapp/static'
 
 LOGIN_REDIRECT_URL = '/forumapp'
 LOGOUT_REDIRECT_URL = '/forumapp'
